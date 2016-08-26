@@ -145,3 +145,6 @@ cd /vagrant/httpdocs
 wget https://raw.github.com/colinmollenhour/modman/master/modman
 sudo mv ./modman /usr/local/bin/
 sudo chmod +x /usr/local/bin/modman
+
+cd /vagrant
+modman init httpdocs
