@@ -7,10 +7,13 @@ A VERY simple Magento environment provisioner for [Vagrant](http://www.vagrantup
 
 * Creates a running Magento development environment with a few simple commands.
 * Runs on Ubuntu (Trusty 14.04 64 Bit) \w PHP 5.5, MySQL 5.5, Apache 2.2
-* Uses [Magento CE 1.9.1.0](http://www.magentocommerce.com/download)
+* Uses [Magento CE 1.9.2.4](http://www.magentocommerce.com/download)
 * Automatically runs Magento's installer and creates CMS admin account.
 * Optionally installs Magento Sample Store Inventory
-* Automatically runs [n98-magerun](https://github.com/netz98/n98-magerun) installer.
+* Installs git.
+* Installs [Composer](https://getcomposer.org/).
+* Installs [n98-magerun](https://github.com/netz98/n98-magerun).
+* Installs [modman](https://github.com/colinmollenhour/modman).
 * Perfect for rapid development or extension testing with an unopionionated, bare-bones and easily tweaked configuration.
 * Goes from naught-to-Magento in a couple of minutes.
 
@@ -54,9 +57,6 @@ Sample data installation can be disabled:
  * Place the sample data `tar.gz` file in the project root
  * Ensure `sample_data = "true"`
  * The provisioning script will skip the download and use the provided file instead. The same goes for when the provisioner is rerun. e.g. `vagrant reload --provision`
-
-## Todo
-* Install Modman.
 
 **Why no Puppet/Chef?**
 Admittedly, Puppet and Chef are excellent solutions for predictable and documented system configurations. The emphasis for this provisioner is on unopinionated simplicity. There are some excellent Puppet / Chef Magento configurations on Github with far more bells and whistles.

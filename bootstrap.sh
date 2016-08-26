@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 SAMPLE_DATA=$1
-MAGE_VERSION="1.9.1.0"
-DATA_VERSION="1.9.0.0"
+MAGE_VERSION="1.9.2.4"
+DATA_VERSION="1.9.1.0"
 
 # Update Apt
 # --------------------
@@ -58,19 +58,20 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get -q -y install mysql-server-5.5
 
 mysql -u root -e "CREATE DATABASE IF NOT EXISTS magentodb"
-mysql -u root -e "GRANT ALL PRIVILEGES ON magentodb.* TO 'magentouser'@'localhost' IDENTIFIED BY 'password'"
+mysql -u root -e "GRANT ALL PRIVILEGES ON magentodb.* TO 'magentouser'@'%' IDENTIFIED BY 'password'"
 mysql -u root -e "FLUSH PRIVILEGES"
 
 
 # Magento
 # --------------------
-# http://www.magentocommerce.com/wiki/1_-_installation_and_configuration/installing_magento_via_shell_ssh
 
 # Download and extract
 if [[ ! -f "/vagrant/httpdocs/index.php" ]]; then
   cd /vagrant/httpdocs
-  wget http://www.magentocommerce.com/downloads/assets/${MAGE_VERSION}/magento-${MAGE_VERSION}.tar.gz
-  tar -zxvf magento-${MAGE_VERSION}.tar.gz
+  echo "Downloading Magento"
+  wget --no-verbose https://www.github.com/OpenMage/magento-mirror/archive/${MAGE_VERSION}.tar.gz -O magento.tar.gz
+  # tar -zxvf magento.tar.gz && mv magento-mirror-${MAGE_VERSION} magento
+  mkdir magento && tar -zxvf magento.tar.gz -C magento --strip-components 1
   mv magento/* magento/.htaccess .
   chmod -R o+w media var
   chmod o+w app/etc
@@ -83,12 +84,13 @@ fi
 if [[ $SAMPLE_DATA == "true" ]]; then
   cd /vagrant
 
-  if [[ ! -f "/vagrant/magento-sample-data-${DATA_VERSION}.tar.gz" ]]; then
+  if [[ ! -f "/vagrant/magento-sample-data-${DATA_VERSION}.tgz" ]]; then
     # Only download sample data if we need to
-    wget http://www.magentocommerce.com/downloads/assets/${DATA_VERSION}/magento-sample-data-${DATA_VERSION}.tar.gz
+    echo "Downloading Sample Magento"
+    wget --no-verbose https://raw.githubusercontent.com/Vinai/compressed-magento-sample-data/${DATA_VERSION}/compressed-magento-sample-data-${DATA_VERSION}.tgz -O magento-sample-data-${DATA_VERSION}.tgz
   fi
 
-  tar -zxvf magento-sample-data-${DATA_VERSION}.tar.gz
+  tar -zxvf magento-sample-data-${DATA_VERSION}.tgz
   cp -R magento-sample-data-${DATA_VERSION}/media/* httpdocs/media/
   cp -R magento-sample-data-${DATA_VERSION}/skin/*  httpdocs/skin/
   mysql -u root magentodb < magento-sample-data-${DATA_VERSION}/magento_sample_data_for_${DATA_VERSION}.sql
@@ -110,9 +112,36 @@ if [ ! -f "/vagrant/httpdocs/app/etc/local.xml" ]; then
   /usr/bin/php -f shell/indexer.php reindexall
 fi
 
-# Install n98-magerun
+# Install git
+# --------------------
+if ! hash git 2>/dev/null; then
+    sudo apt-get -y update
+    sudo apt-get -y install git
+fi
+
+# Install composer
 # --------------------
 cd /vagrant/httpdocs
+curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
+
+
+# 
+# Install n98-magerun
+# ==============================================
+
+cd /vagrant/httpdocs
 wget https://raw.github.com/netz98/n98-magerun/master/n98-magerun.phar
-chmod +x ./n98-magerun.phar
+sudo chmod +x ./n98-magerun.phar
 sudo mv ./n98-magerun.phar /usr/local/bin/
+
+# Enabled magento symlink
+n98-magerun.phar dev:symlinks --on --global
+
+
+# 
+# Install modman
+# ==============================================
+cd /vagrant/httpdocs
+wget https://raw.github.com/colinmollenhour/modman/master/modman
+sudo mv ./modman /usr/local/bin/
+sudo chmod +x /usr/local/bin/modman
