@@ -131,8 +131,8 @@ curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/loca
 
 cd /vagrant/httpdocs
 wget https://raw.github.com/netz98/n98-magerun/master/n98-magerun.phar
-sudo chmod +x ./n98-magerun.phar
 sudo mv ./n98-magerun.phar /usr/local/bin/
+sudo chmod +x /usr/local/bin/n98-magerun.phar
 
 # Enabled magento symlink
 n98-magerun.phar dev:symlinks --on --global
